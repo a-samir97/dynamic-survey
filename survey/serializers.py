@@ -1,38 +1,38 @@
 from rest_framework import serializers
-from .models import Survey, Section, FieldType, Field, SurveyResponse, FieldResponse
-
-
-class SurveySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Survey
-        fields = '__all__'
-
-
-class SectionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Section
-        fields = '__all__'
-
-
-class FieldTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FieldType
-        fields = '__all__'
+from .models import Survey, Section, Field, SurveyResponse, FieldResponse
 
 
 class FieldSerializer(serializers.ModelSerializer):
     class Meta:
         model = Field
-        fields = '__all__'
+        exclude = ['section']
 
 
-class SurveyResponseSerializer(serializers.ModelSerializer):
+class SectionSerializer(serializers.ModelSerializer):
+    fields = FieldSerializer(many=True)
+
     class Meta:
-        model = SurveyResponse
-        fields = '__all__'
+        model = Section
+        fields = ['id', 'title', 'order', 'fields']
+
+
+class SurveySerializer(serializers.ModelSerializer):
+    sections = SectionSerializer(many=True)
+
+    class Meta:
+        model = Survey
+        fields = ['id', 'title', 'description', 'sections', 'created_at', 'updated_at']
 
 
 class FieldResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = FieldResponse
-        fields = '__all__'
+        exclude = ['survey_response']
+
+
+class SurveyResponseSerializer(serializers.ModelSerializer):
+    answers = FieldResponseSerializer(many=True)
+
+    class Meta:
+        model = SurveyResponse
+        fields = ['id', 'survey', 'completed_at', 'is_completed', 'current_step', 'answers', 'created_at', 'updated_at']
