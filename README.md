@@ -24,8 +24,8 @@ The Dynamic Survey Builder is a robust backend system built with Django and Djan
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/dynamic-survey-builder.git
-   cd dynamic-survey-builder
+   git clone https://github.com/a-samir97/dynamic-survey.git
+   cd dynamic-survey
    ```
 
 2. Create a virtual environment and activate it:
