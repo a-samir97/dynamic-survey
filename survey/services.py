@@ -48,12 +48,13 @@ class SurveyResponseService:
     def create_survey_response(
             self, survey_response_serializer: SurveyResponseSerializer) -> SurveyResponse:
         survey_response_serializer.is_valid(raise_exception=True)
-
+        answers = survey_response_serializer.data.pop('answers')
         answers_data = survey_response_serializer.validated_data.pop('answers')
+
         # Validate conditional logic
-        self._validate_conditional_logic(survey_response_serializer.validated_data, answers_data)
+        self._validate_conditional_logic(survey_response_serializer.validated_data, answers)
         # Validate dependencies
-        self._validate_dependencies(survey_response_serializer.validated_data, answers_data)
+        self._validate_dependencies(survey_response_serializer.validated_data, answers)
 
         survey_response = SurveyResponse.objects.create(**survey_response_serializer.validated_data)
         for answer_data in answers_data:
@@ -77,9 +78,8 @@ class SurveyResponseService:
     def _evalute_condition(self, condition: dict, answers: dict) -> bool:
         field = condition['field_id']
         expected_value = condition['value']
-        answer = answers.get(field)
-
-        return answer and answer == expected_value
+        answer = next((answer for answer in answers if answer['field'] == field), None)
+        return answer and answer['value'] == expected_value
 
     def _validate_dependencies(self, survery_response_data: dict, answers: dict):
         survery = survery_response_data['survey']
@@ -91,8 +91,12 @@ class SurveyResponseService:
                     for dependency in field.dependencies:
                         dependent_field = dependency['field_id']
                         dependent_value = dependency['value']
-                        dependent_answer = answers.get(dependent_field)
-                        if dependent_answer != dependent_value:
+                        dependent_answer = next(
+                            (answer for answer in answers if answer['field'] == dependent_field),
+                            None
+                        )
+
+                        if dependent_answer and dependent_answer['value'] != dependent_value:
                             raise serializers.ValidationError(
                                 f"Dependency failed for field {field.name}"
                             )
