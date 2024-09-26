@@ -61,7 +61,7 @@ class SurveyResponse(models.Model):
 
 class FieldResponse(models.Model):
     survey_response = models.ForeignKey(
-        SurveyResponse, on_delete=models.CASCADE, related_name='field_responses')
+        SurveyResponse, on_delete=models.CASCADE, related_name='answers')
     field = models.ForeignKey(Field, on_delete=models.CASCADE)
     value = models.JSONField(default=dict, blank=True)
 
